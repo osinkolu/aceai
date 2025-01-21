@@ -19,7 +19,7 @@ from engine import (create_tables, db, User,  say, #get_random_text, random_imag
     extract_text_from_pdf, extract_text_from_docx, resource_path)
 from engine import  db, login_manager, create_tables, secret_key #Ai_images_dir, Real_images_dir,
 
-my_app = Flask(
+app = Flask(
     __name__,
     template_folder=resource_path('templates'),
     static_folder=resource_path('static')
@@ -27,23 +27,23 @@ my_app = Flask(
 
 # Configure the app with settings
 basedir = os.path.abspath(os.path.dirname(__file__))
-my_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'data.db')
-my_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-my_app.config['SECRET_KEY'] = secret_key
-my_app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'data.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = secret_key
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 
-db.init_app(my_app)
-login_manager.init_app(my_app)
+db.init_app(app)
+login_manager.init_app(app)
 
-with my_app.app_context():
+with app.app_context():
     create_tables()
 
-# @my_app.route('/get_random_text')
+# @app.route('/get_random_text')
 # def get_text_for_game():
 #     text, label = get_random_text()
 #     return  jsonify({'text': text, 'label': int(label)})
 
-# @my_app.route('/get_random_content')
+# @app.route('/get_random_content')
 # def get_random_content():
 #     # First I Retrieve or initialize round number and score
 #     round_num = session.get('round_num', 1)
@@ -83,15 +83,15 @@ with my_app.app_context():
 #             'score': score
 #         }) 
 
-# @my_app.route('/get_image/<label>/<filename>')
+# @app.route('/get_image/<label>/<filename>')
 # def get_image(label, filename):
 #     folder = Ai_images_dir if label == "AI" else Real_images_dir
 #     return send_from_directory(folder, filename)
 
-@my_app.route('/')
+@app.route('/')
 def home():
     return redirect(url_for('login'))
-@my_app.route('/login', methods=["GET", 'POST'])
+@app.route('/login', methods=["GET", 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -110,18 +110,18 @@ def login():
 
     return render_template('login.html')
 
-@my_app.route('/home')
+@app.route('/home')
 def home_page():
     session.pop('show_plagiarism_page', None)
     return redirect(url_for('plagiarism'))
 
 # #My Route to render AI_game page
-@my_app.route('/ai_game')
+@app.route('/ai_game')
 @login_required  #  I added this so it can it only be accessible to logged-in users
 def ai_game():
     return render_template('AI_game.html')
 
-@my_app.route('/plagiarism', methods=['GET', 'POST'])
+@app.route('/plagiarism', methods=['GET', 'POST'])
 @login_required
 def plagiarism():
     extracted_text = ""
@@ -223,7 +223,7 @@ def plagiarism():
     )
 
 # Register route
-@my_app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -248,7 +248,7 @@ def register():
 
     return render_template('register.html')
 # Logout route
-@my_app.route('/logout')
+@app.route('/logout')
 @login_required
 def logout():
     logout_user()
@@ -256,5 +256,5 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    with my_app.app_context():
-        my_app.run(host='0.0.0.0', port=80, debug=True)
+    with app.app_context():
+        app.run(host='0.0.0.0', port=80, debug=True)
